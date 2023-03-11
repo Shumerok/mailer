@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\IndexController;
+use App\Http\Controllers\MailController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +15,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', IndexController::class);
+Route::post('/', [MailController::class, 'send'])->name('send');
+Route::get('/{uuid}/success', [MailController::class, 'success'])->name('success');
