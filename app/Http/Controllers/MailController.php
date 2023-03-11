@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\MailRequest;
 use App\Models\Mail;
 use App\Services\MailService;
+use Illuminate\Support\Facades\Storage;
 
 class MailController extends Controller
 {
@@ -26,6 +27,9 @@ class MailController extends Controller
     public function success(string $uuid)
     {
         $mail = Mail::where('uuid', '=', $uuid)->firstOrFail();
-        return view('success', compact('mail'));
+        $body = Storage::disk('public')->get($mail->uuid.'_body.txt');
+        $subject = Storage::disk('public')->get($mail->uuid.'_subject.txt');
+        $type = Storage::disk('public')->get($mail->uuid.'_type.txt');
+        return view('success', compact('mail', 'body', 'type','subject'));
     }
 }

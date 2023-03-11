@@ -47,12 +47,17 @@
                                 </tr>
                                 <tr>
                                     <td>Type:</td>
-                                    <td></td>
+                                    <td>{{$type}}</td>
                                 </tr>
                                 <tr>
                                     <td>Body:</td>
                                     <td>
-                                        <iframe srcdoc="<p>Some <i>html</i></p>"></iframe>
+                                        @if($type==='html')
+                                            <iframe srcdoc="{{$body}}"></iframe>
+                                        @endif
+                                        @if($type==='text')
+                                            {{$body}}
+                                        @endif
                                     </td>
                                 </tr>
                                 </tbody>
