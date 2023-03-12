@@ -7,12 +7,12 @@ namespace App\Services;
 use App\Http\Requests\MailRequest;
 use App\Models\Mail;
 use Illuminate\Support\Facades\Storage;
-use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
+use Ramsey\Uuid\Lazy\LazyUuidFromString;
 
 class MailService
 {
-    public function send(array $data, MailRequest $request)
+    public function send(array $data, MailRequest $request): LazyUuidFromString
     {
         $data['ip'] = $request->ip();
         $data['user_agent'] = $request->userAgent();
@@ -31,33 +31,29 @@ class MailService
     protected function composeAndSendMail(array $data): void
     {
         $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host = env('MAIL_HOST');
+        $mail->SMTPAuth = false;
+        $mail->Port = env('MAIL_PORT');
+        $mail->CharSet = 'UTF-8';
 
-        try {
-            $mail->isSMTP();
-            $mail->Host = 'mailhog';
-            $mail->SMTPAuth = false;
-            $mail->Port = 1025;
-            $mail->CharSet = 'UTF-8';
+        $mail->setFrom($data['mail_from'], 'PHPMailer');
+        $mail->addAddress($data['mail_to'], 'PHPMailer');
 
-            $mail->setFrom($data['mail_from'], 'PHPMailer');
-            $mail->addAddress($data['mail_to'], 'PHPMailer');
-
-            if (isset($data['mail_copy'])) {
-                $mail->addCC($data['mail_copy'], 'PHPMailer');
-            }
-            if (isset($data['type']) && $data['type'] === 'html') {
-                $mail->isHTML();
-            }
-
-            if (isset($data['type']) && $data['type'] === 'text') {
-                $mail->AltBody = $data['body'];
-            }
-            $mail->Subject = $data['subject'];
-            $mail->Body = $data['body'];
-            $mail->send();
-        } catch (Exception $e) {
-            echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        if (isset($data['mail_copy'])) {
+            $mail->addCC($data['mail_copy'], 'PHPMailer');
         }
+        if (isset($data['type']) && $data['type'] === 'html') {
+            $mail->isHTML();
+        }
+
+        if (isset($data['type']) && $data['type'] === 'text') {
+            $mail->isHTML(false);
+            $mail->AltBody = $data['body'];
+        }
+        $mail->Subject = $data['subject'];
+        $mail->Body = $data['body'];
+        $mail->send();
     }
 
 }
